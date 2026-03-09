@@ -29,7 +29,7 @@
         <!-- Achievement badge label -->
         <div class="card-badge-label">🏆 成就达成</div>
         <!-- Title with golden shimmer -->
-        <h1 class="card-title golden-text">{{ form.title || '成就名称' }}</h1>
+        <h1 class="card-title golden-text" ref="titleRef">{{ form.title || '成就名称' }}</h1>
         <!-- Recipient -->
         <div class="card-recipient">
           <span class="card-recipient-prefix">授予：</span>
@@ -79,9 +79,21 @@ const store = useAchievementStore()
 const { form } = storeToRefs(store)
 
 const cardRef = ref(null)
+const titleRef = ref(null)
 const isExporting = ref(false)
 
-defineExpose({ cardRef, isExporting })
+// Used for GIF generation to manually step animation
+function forceShimmerPos(percentage) {
+  if (titleRef.value) {
+    if (percentage === null) {
+      titleRef.value.style.backgroundPosition = ''
+    } else {
+      titleRef.value.style.backgroundPosition = `${percentage}% center`
+    }
+  }
+}
+
+defineExpose({ cardRef, isExporting, forceShimmerPos })
 
 const bgClass = computed(() => {
   if (form.value.backgroundTheme === 'custom') return ''
@@ -312,6 +324,8 @@ const customStyle = computed(() => {
 
 /* Export state */
 .is-exporting .golden-text {
-  /* Keep animation but freeze for capture */
+  animation: none !important;
+  background-position: 100% center !important;
+  -webkit-text-fill-color: transparent !important;
 }
 </style>
