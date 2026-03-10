@@ -16,13 +16,6 @@
           <img :src="form.iconBase64" alt="成就图标" class="card-icon-img" />
         </div>
       </div>
-      <div v-else class="card-icon-area card-icon-placeholder">
-        <div class="card-icon-wrap card-icon-empty">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
-        </div>
-      </div>
 
       <!-- Center-left: Core info -->
       <div class="card-core">
