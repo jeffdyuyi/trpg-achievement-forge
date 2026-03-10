@@ -18,7 +18,7 @@
       </div>
 
       <!-- Center-left: Core info -->
-      <div class="card-core">
+      <div class="card-core" :style="coreAlignStyle">
         <!-- Achievement badge label -->
         <div class="card-badge-label">🏆 成就达成</div>
         <!-- Title with golden shimmer -->
@@ -35,11 +35,11 @@
 
       <!-- Center-right: Description -->
       <div class="card-desc-area">
-        <p class="card-description" :style="{ fontSize: (form.descriptionFontSize || 13) + 'px' }" v-html="form.description || '在此填写成就描述，讲述这段传奇的由来……'"></p>
+        <p class="card-description" :style="descAlignStyle" v-html="form.description || '在此填写成就描述，讲述这段传奇的由来……'"></p>
       </div>
 
       <!-- Right: Metadata -->
-      <div class="card-meta-area">
+      <div class="card-meta-area" :style="metaAlignStyle">
         <div v-if="form.gameName" class="card-meta-item">
           <span class="card-meta-icon">🎲</span>
           <span v-html="form.gameName"></span>
@@ -98,6 +98,27 @@ const customStyle = computed(() => {
     return { background: form.value.customBgColor }
   }
   return {}
+})
+
+// Alignment computed styles
+const coreAlignStyle = computed(() => {
+  const align = form.value.coreAlign || 'left'
+  const alignItems = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'
+  return { textAlign: align, alignItems }
+})
+
+const descAlignStyle = computed(() => {
+  const align = form.value.descAlign || 'left'
+  return { 
+    textAlign: align, 
+    fontSize: (form.value.descriptionFontSize || 13) + 'px'
+  }
+})
+
+const metaAlignStyle = computed(() => {
+  const align = form.value.metaAlign || 'left'
+  const alignItems = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'
+  return { textAlign: align, alignItems }
 })
 </script>
 

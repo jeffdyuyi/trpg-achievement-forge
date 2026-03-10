@@ -33,11 +33,24 @@
 
     <!-- Title (required) -->
     <div class="form-group">
-      <label class="form-label">
-        成就名称 <span class="required-tag">必填</span>
-        <span class="char-count" :class="{ warn: (form.title?.length || 0) > 16 }">
-          {{ form.title?.length || 0 }}/20
+      <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>
+          成就名称 <span class="required-tag">必填</span>
+          <span class="char-count" :class="{ warn: (form.title?.length || 0) > 16 }">
+            {{ form.title?.length || 0 }}/20
+          </span>
         </span>
+        <div class="text-align-control">
+          <button type="button" class="align-btn" :class="{active: form.coreAlign === 'left'}" @click="form.coreAlign = 'left'" title="主信息局左">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+          </button>
+          <button type="button" class="align-btn" :class="{active: form.coreAlign === 'center'}" @click="form.coreAlign = 'center'" title="主信息居中">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="10" x2="6" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
+          </button>
+          <button type="button" class="align-btn" :class="{active: form.coreAlign === 'right'}" @click="form.coreAlign = 'right'" title="主信息居右">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+          </button>
+        </div>
       </label>
       <RichInput
         v-model="form.title"
@@ -57,7 +70,20 @@
 
     <!-- Description (required) -->
     <div class="form-group">
-      <label class="form-label">成就描述 <span class="required-tag">必填</span></label>
+      <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>成就描述 <span class="required-tag">必填</span></span>
+        <div class="text-align-control">
+          <button type="button" class="align-btn" :class="{active: form.descAlign === 'left'}" @click="form.descAlign = 'left'" title="描述居左">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+          </button>
+          <button type="button" class="align-btn" :class="{active: form.descAlign === 'center'}" @click="form.descAlign = 'center'" title="描述居中">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="10" x2="6" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
+          </button>
+          <button type="button" class="align-btn" :class="{active: form.descAlign === 'right'}" @click="form.descAlign = 'right'" title="描述居右">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+          </button>
+        </div>
+      </label>
       <RichInput
         multiline
         v-model="form.description"
@@ -85,6 +111,17 @@
     <!-- Separator -->
     <div class="form-separator">
       <span>可选信息</span>
+      <div class="text-align-control" style="margin-left: auto;">
+        <button type="button" class="align-btn" :class="{active: form.metaAlign === 'left'}" @click="form.metaAlign = 'left'" title="信息居左">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+        </button>
+        <button type="button" class="align-btn" :class="{active: form.metaAlign === 'center'}" @click="form.metaAlign = 'center'" title="信息居中">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="10" x2="6" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
+        </button>
+        <button type="button" class="align-btn" :class="{active: form.metaAlign === 'right'}" @click="form.metaAlign = 'right'" title="信息居右">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- Game Name -->
@@ -388,6 +425,35 @@ function handleIconDrop(e) {
   cursor: pointer;
   background: none;
   padding: 2px;
+}
+
+/* Align Controls */
+.text-align-control {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 3px;
+  border: 1px solid var(--border-subtle);
+}
+.align-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 3px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.align-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.align-btn.active {
+  background: rgba(191,149,63,0.2);
+  color: var(--gold-2);
 }
 
 .mt-2 { margin-top: 8px; }

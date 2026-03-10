@@ -9,10 +9,13 @@ export const useAchievementStore = defineStore('achievement', () => {
     const form = ref({
         title: '',
         recipient: '',
+        coreAlign: 'left',
         description: '',
+        descAlign: 'left',
         descriptionFontSize: 13,
         gameName: '',
         issuer: '',
+        metaAlign: 'left',
         date: new Date().toISOString().slice(0, 10),
         backgroundTheme: 'dark',
         iconBase64: '',
@@ -58,6 +61,9 @@ export const useAchievementStore = defineStore('achievement', () => {
             description: form.value.description,
             iconBase64: form.value.iconBase64,
             metadata: {
+                coreAlign: form.value.coreAlign,
+                descAlign: form.value.descAlign,
+                metaAlign: form.value.metaAlign,
                 descriptionFontSize: form.value.descriptionFontSize,
                 gameName: form.value.gameName,
                 issuer: form.value.issuer,
@@ -100,11 +106,14 @@ export const useAchievementStore = defineStore('achievement', () => {
     function loadRecord(record) {
         form.value.title = record.title || ''
         form.value.recipient = record.recipient || ''
+        form.value.coreAlign = record.metadata?.coreAlign || 'left'
         form.value.description = record.description || ''
+        form.value.descAlign = record.metadata?.descAlign || 'left'
         form.value.descriptionFontSize = record.metadata?.descriptionFontSize || 13
         form.value.iconBase64 = record.iconBase64 || ''
         form.value.gameName = record.metadata?.gameName || ''
         form.value.issuer = record.metadata?.issuer || ''
+        form.value.metaAlign = record.metadata?.metaAlign || 'left'
         form.value.date = record.metadata?.date || new Date().toISOString().slice(0, 10)
         form.value.backgroundTheme = record.style?.backgroundTheme || 'dark'
         form.value.customBgColor = record.style?.customBgColor || '#0f0c20'
@@ -116,10 +125,13 @@ export const useAchievementStore = defineStore('achievement', () => {
         form.value = {
             title: '',
             recipient: '',
+            coreAlign: 'left',
             description: '',
+            descAlign: 'left',
             descriptionFontSize: 13,
             gameName: '',
             issuer: '',
+            metaAlign: 'left',
             date: new Date().toISOString().slice(0, 10),
             backgroundTheme: 'dark',
             iconBase64: '',
