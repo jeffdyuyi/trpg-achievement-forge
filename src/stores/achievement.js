@@ -1,8 +1,17 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import localforage from 'localforage'
 
 const DB_KEY = 'trpg-achievements'
+const DRAFT_KEY = 'trpg-draft'
+
+function getLocalDateString() {
+    const d = new Date()
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
 
 export const useAchievementStore = defineStore('achievement', () => {
     // Current form state
@@ -16,11 +25,30 @@ export const useAchievementStore = defineStore('achievement', () => {
         gameName: '',
         issuer: '',
         metaAlign: 'left',
-        date: new Date().toISOString().slice(0, 10),
+        date: getLocalDateString(),
         backgroundTheme: 'dark',
         iconBase64: '',
         customBgColor: '#0f0c20',
     })
+
+    // Restore draft if exists
+    try {
+        const draft = localStorage.getItem(DRAFT_KEY)
+        if (draft) {
+            form.value = { ...form.value, ...JSON.parse(draft) }
+        }
+    } catch (e) {
+        console.warn('Failed to load draft:', e)
+    }
+
+    // Auto-save draft on any form changes
+    watch(form, (newVal) => {
+        try {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(newVal))
+        } catch (e) {
+            console.warn('Failed to save draft:', e)
+        }
+    }, { deep: true })
 
     // History records
     const history = ref([])
@@ -114,7 +142,7 @@ export const useAchievementStore = defineStore('achievement', () => {
         form.value.gameName = record.metadata?.gameName || ''
         form.value.issuer = record.metadata?.issuer || ''
         form.value.metaAlign = record.metadata?.metaAlign || 'left'
-        form.value.date = record.metadata?.date || new Date().toISOString().slice(0, 10)
+        form.value.date = record.metadata?.date || getLocalDateString()
         form.value.backgroundTheme = record.style?.backgroundTheme || 'dark'
         form.value.customBgColor = record.style?.customBgColor || '#0f0c20'
         selectedHistoryId.value = record.id
@@ -132,7 +160,7 @@ export const useAchievementStore = defineStore('achievement', () => {
             gameName: '',
             issuer: '',
             metaAlign: 'left',
-            date: new Date().toISOString().slice(0, 10),
+            date: getLocalDateString(),
             backgroundTheme: 'dark',
             iconBase64: '',
             customBgColor: '#0f0c20',
