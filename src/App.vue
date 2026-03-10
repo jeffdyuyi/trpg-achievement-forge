@@ -49,7 +49,22 @@
           重置
         </button>
 
-        <!-- Save & Export PNG -->
+        <!-- Save to History -->
+        <button
+          class="btn-ghost"
+          @click="handleSave"
+          :disabled="!canExport"
+          title="将当前卡片保存到本地记录"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          保存卡片
+        </button>
+
+        <!-- Export PNG -->
         <button
           class="btn-gold"
           @click="handleExportPNG"
@@ -64,7 +79,7 @@
           <svg v-else class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
           </svg>
-          {{ isExporting ? '导出中…' : '保存并导出 PNG' }}
+          {{ isExporting ? '生成中…' : '导出 PNG' }}
         </button>
 
         <!-- Export GIF -->
@@ -141,7 +156,7 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            卡片已就绪，导出的 PNG 会自动嵌入数据，可随时拖回导入
+            卡片已就绪，导出的资源会自动带上历史数据，也可点击"保存卡片"记录在本地。
           </div>
         </div>
       </main>
@@ -240,6 +255,17 @@ onMounted(() => {
   store.loadHistory()
 })
 
+// Save to local history
+async function handleSave() {
+  if (!canExport.value) {
+    showToast('请先填写必填信息', 'error')
+    return
+  }
+  await store.saveToHistory()
+  showToast('✅ 卡片已保存到本地历史记录', 'success')
+  showHistory.value = true
+}
+
 // PNG export
 async function handleExportPNG() {
   if (!canExport.value) {
@@ -250,8 +276,7 @@ async function handleExportPNG() {
   isExporting.value = true
 
   try {
-    // Save to history first
-    const record = await store.saveToHistory()
+    const record = store.buildRecord()
 
     const cardEl = cardRef.value?.cardRef
     if (!cardEl) throw new Error('找不到卡片元素')
@@ -300,7 +325,7 @@ async function handleExportGIF() {
   isExportingGIF.value = true
 
   try {
-    const record = await store.saveToHistory()
+    const record = store.buildRecord()
     const cardEl = cardRef.value?.cardRef
     const cardComp = cardRef.value
     if (!cardEl || !cardComp.forceShimmerPos) throw new Error('找不到卡片元素')

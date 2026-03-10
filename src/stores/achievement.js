@@ -10,6 +10,7 @@ export const useAchievementStore = defineStore('achievement', () => {
         title: '',
         recipient: '',
         description: '',
+        descriptionFontSize: 13,
         gameName: '',
         issuer: '',
         date: new Date().toISOString().slice(0, 10),
@@ -57,6 +58,7 @@ export const useAchievementStore = defineStore('achievement', () => {
             description: form.value.description,
             iconBase64: form.value.iconBase64,
             metadata: {
+                descriptionFontSize: form.value.descriptionFontSize,
                 gameName: form.value.gameName,
                 issuer: form.value.issuer,
                 date: form.value.date,
@@ -99,6 +101,7 @@ export const useAchievementStore = defineStore('achievement', () => {
         form.value.title = record.title || ''
         form.value.recipient = record.recipient || ''
         form.value.description = record.description || ''
+        form.value.descriptionFontSize = record.metadata?.descriptionFontSize || 13
         form.value.iconBase64 = record.iconBase64 || ''
         form.value.gameName = record.metadata?.gameName || ''
         form.value.issuer = record.metadata?.issuer || ''
@@ -114,6 +117,7 @@ export const useAchievementStore = defineStore('achievement', () => {
             title: '',
             recipient: '',
             description: '',
+            descriptionFontSize: 13,
             gameName: '',
             issuer: '',
             date: new Date().toISOString().slice(0, 10),
@@ -167,5 +171,6 @@ export const useAchievementStore = defineStore('achievement', () => {
         resetForm,
         exportJSON,
         importJSON,
+        buildRecord,
     }
 })

@@ -39,9 +39,7 @@
           {{ form.title?.length || 0 }}/20
         </span>
       </label>
-      <input
-        class="forge-input"
-        type="text"
+      <RichInput
         v-model="form.title"
         placeholder="如：直面古神而不疯"
         maxlength="20"
@@ -51,9 +49,7 @@
     <!-- Recipient (required) -->
     <div class="form-group">
       <label class="form-label">获得者 <span class="required-tag">必填</span></label>
-      <input
-        class="forge-input"
-        type="text"
+      <RichInput
         v-model="form.recipient"
         placeholder="如：调查员 约翰·史密斯"
       />
@@ -62,12 +58,27 @@
     <!-- Description (required) -->
     <div class="form-group">
       <label class="form-label">成就描述 <span class="required-tag">必填</span></label>
-      <textarea
-        class="forge-input"
+      <RichInput
+        multiline
         v-model="form.description"
         placeholder="在目击了克苏鲁的虚影后，连续三次通过了极难的理智检定……"
         rows="4"
         style="resize:vertical; min-height: 80px;"
+      />
+    </div>
+
+    <!-- Font size for description -->
+    <div class="form-group">
+      <label class="form-label" style="display:flex; justify-content:space-between;">
+        <span>描述字体大小</span>
+        <span>{{ form.descriptionFontSize }} px</span>
+      </label>
+      <input 
+        type="range" 
+        min="10" 
+        max="36" 
+        v-model.number="form.descriptionFontSize" 
+        style="width:100%; height:4px; accent-color: var(--gold-1); cursor:pointer;" 
       />
     </div>
 
@@ -79,9 +90,7 @@
     <!-- Game Name -->
     <div class="form-group">
       <label class="form-label">游戏名称 <span class="optional-tag">可选</span></label>
-      <input
-        class="forge-input"
-        type="text"
+      <RichInput
         v-model="form.gameName"
         placeholder="如：克苏鲁的呼唤：星之吸血鬼"
       />
@@ -90,9 +99,7 @@
     <!-- Issuer -->
     <div class="form-group">
       <label class="form-label">颁发者 <span class="optional-tag">可选</span></label>
-      <input
-        class="forge-input"
-        type="text"
+      <RichInput
         v-model="form.issuer"
         placeholder="如：KP 无情的骰子"
       />
@@ -138,6 +145,7 @@
 import { ref } from 'vue'
 import { useAchievementStore } from '../stores/achievement.js'
 import { storeToRefs } from 'pinia'
+import RichInput from './RichInput.vue'
 
 const store = useAchievementStore()
 const { form } = storeToRefs(store)

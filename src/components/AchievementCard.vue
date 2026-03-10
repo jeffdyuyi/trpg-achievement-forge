@@ -29,11 +29,11 @@
         <!-- Achievement badge label -->
         <div class="card-badge-label">🏆 成就达成</div>
         <!-- Title with golden shimmer -->
-        <h1 class="card-title golden-text" ref="titleRef">{{ form.title || '成就名称' }}</h1>
+        <h1 class="card-title golden-text" ref="titleRef" v-html="form.title || '成就名称'"></h1>
         <!-- Recipient -->
         <div class="card-recipient">
           <span class="card-recipient-prefix">授予：</span>
-          <span class="card-recipient-name">{{ form.recipient || '获得者' }}</span>
+          <span class="card-recipient-name" v-html="form.recipient || '获得者'"></span>
         </div>
       </div>
 
@@ -42,18 +42,18 @@
 
       <!-- Center-right: Description -->
       <div class="card-desc-area">
-        <p class="card-description">{{ form.description || '在此填写成就描述，讲述这段传奇的由来……' }}</p>
+        <p class="card-description" :style="{ fontSize: (form.descriptionFontSize || 13) + 'px' }" v-html="form.description || '在此填写成就描述，讲述这段传奇的由来……'"></p>
       </div>
 
       <!-- Right: Metadata -->
       <div class="card-meta-area">
         <div v-if="form.gameName" class="card-meta-item">
           <span class="card-meta-icon">🎲</span>
-          <span>{{ form.gameName }}</span>
+          <span v-html="form.gameName"></span>
         </div>
         <div v-if="form.issuer" class="card-meta-item">
           <span class="card-meta-icon">📜</span>
-          <span>{{ form.issuer }}</span>
+          <span v-html="form.issuer"></span>
         </div>
         <div v-if="form.date" class="card-meta-item">
           <span class="card-meta-icon">📅</span>
@@ -121,7 +121,8 @@ const customStyle = computed(() => {
 .achievement-card {
   position: relative;
   width: 1000px;
-  min-height: 200px;
+  min-height: 140px;
+  height: auto;
   max-width: 100%;
   display: flex;
   align-items: stretch;
@@ -270,7 +271,6 @@ const customStyle = computed(() => {
   z-index: 2;
 }
 .card-description {
-  font-size: 13px;
   line-height: 1.7;
   color: rgba(240,234,216,0.82);
   margin: 0;
