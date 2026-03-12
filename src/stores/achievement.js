@@ -31,6 +31,11 @@ export const useAchievementStore = defineStore('achievement', () => {
         customBgColor: '#0f0c20',
     })
 
+    // History and Selection State
+    const history = ref([])
+    const historyLoaded = ref(false)
+    const selectedHistoryId = ref(null)
+
     // Restore draft if exists
     try {
         const draft = localStorage.getItem(DRAFT_KEY)
@@ -65,13 +70,6 @@ export const useAchievementStore = defineStore('achievement', () => {
             console.warn('Failed to save draft:', e)
         }
     }, { deep: true })
-
-    // History records
-    const history = ref([])
-    const historyLoaded = ref(false)
-
-    // Selected history item id (for highlight)
-    const selectedHistoryId = ref(null)
 
     // Load history from IndexedDB
     async function loadHistory() {
