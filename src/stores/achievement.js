@@ -35,16 +35,26 @@ export const useAchievementStore = defineStore('achievement', () => {
     try {
         const draft = localStorage.getItem(DRAFT_KEY)
         if (draft) {
-            form.value = { ...form.value, ...JSON.parse(draft) }
+            const parsed = JSON.parse(draft)
+            // Use Object.assign to merge with defaults in case of new properties
+            if (parsed.form) {
+                Object.assign(form.value, parsed.form)
+            }
+            if (parsed.selectedId) {
+                selectedHistoryId.value = parsed.selectedId
+            }
         }
     } catch (e) {
         console.warn('Failed to load draft:', e)
     }
 
-    // Auto-save draft on any form changes
-    watch(form, (newVal) => {
+    // Auto-save draft on any form changes or ID changes
+    watch([form, selectedHistoryId], ([newForm, newId]) => {
         try {
-            localStorage.setItem(DRAFT_KEY, JSON.stringify(newVal))
+            localStorage.setItem(DRAFT_KEY, JSON.stringify({
+                form: newForm,
+                selectedId: newId
+            }))
         } catch (e) {
             console.warn('Failed to save draft:', e)
         }
@@ -79,10 +89,10 @@ export const useAchievementStore = defineStore('achievement', () => {
         }
     }
 
-    // Build a record object from current form
-    function buildRecord() {
+    // Build a record object with specific ID
+    function buildRecord(existingId = null) {
         return {
-            id: Date.now().toString(),
+            id: existingId || Date.now().toString(),
             version: '1.0',
             title: form.value.title,
             recipient: form.value.recipient,
@@ -105,13 +115,41 @@ export const useAchievementStore = defineStore('achievement', () => {
         }
     }
 
-    // Save current state to history
-    async function saveToHistory() {
-        const record = buildRecord()
-        // Prepend to history (newest first)
-        history.value = [record, ...history.value.slice(0, 49)] // max 50 records
+    // Save as new record
+    async function saveAsNewRecord() {
+        const record = buildRecord() // New ID
+        history.value = [record, ...history.value.slice(0, 49)]
+        selectedHistoryId.value = record.id
         await persistHistory()
         return record
+    }
+
+    // Update existing record
+    async function updateRecord() {
+        if (!selectedHistoryId.value) return saveAsNewRecord()
+
+        const record = buildRecord(selectedHistoryId.value) // Same ID
+        const index = history.value.findIndex(r => r.id === selectedHistoryId.value)
+
+        if (index !== -1) {
+            // Replace in place
+            history.value[index] = record
+            // Optionally move to top? Usually overwrite stays in place or moves up. Let's stay in place but re-persist.
+        } else {
+            // ID not found (maybe deleted?), treat as new
+            history.value = [record, ...history.value.slice(0, 49)]
+        }
+
+        await persistHistory()
+        return record
+    }
+
+    // (Deprecated/Wrapper) Legacy save function
+    async function saveToHistory() {
+        if (selectedHistoryId.value) {
+            return updateRecord()
+        }
+        return saveAsNewRecord()
     }
 
     // Delete a history record
@@ -205,6 +243,8 @@ export const useAchievementStore = defineStore('achievement', () => {
         selectedHistoryId,
         loadHistory,
         saveToHistory,
+        saveAsNewRecord,
+        updateRecord,
         deleteHistoryRecord,
         clearHistory,
         loadRecord,

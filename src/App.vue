@@ -45,14 +45,27 @@
           </div>
 
           <div class="btn-group">
-            <button class="btn-ghost btn-sm" @click="handleReset" title="重置表单">
+            <button class="btn-ghost btn-sm" @click="handleReset" title="重置并新建">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.87"/></svg>
             </button>
-            <button class="btn-ghost btn-sm" @click="handleSave" :disabled="!isForgeValid" title="保存到本地记录">
+            
+            <!-- Conditional Save Buttons -->
+            <template v-if="selectedHistoryId">
+              <button class="btn-ghost btn-sm" @click="handleUpdate" :disabled="!isForgeValid" title="覆盖当前编辑的记录">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                覆盖保存
+              </button>
+              <button class="btn-ghost btn-sm" @click="handleSaveNew" :disabled="!isForgeValid" title="作为新成就另存一份">
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 1-2 2v14a2 2 0 0 1 2 2h14a2 2 0 0 1 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                 另存为
+              </button>
+            </template>
+            <button v-else class="btn-ghost btn-sm" @click="handleSaveNew" :disabled="!isForgeValid" title="保存到本地记录">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-              保存
+              保存卡片
             </button>
-            <button class="btn-ghost btn-sm history-toggle-btn" @click="showHistory = !showHistory" :class="{ active: showHistory }" title="历史记录">
+
+            <button class="btn-ghost btn-sm history-toggle-btn" @click="showHistory = !showHistory" :class="{ active: showHistory }" title="本地历史记录">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               历史
             </button>
@@ -137,7 +150,7 @@ import { storeToRefs } from 'pinia'
 import { embedMetadataToImage, extractMetadataFromImage } from './utils/metadata.js'
 
 const store = useAchievementStore()
-const { form } = storeToRefs(store)
+const { form, selectedHistoryId } = storeToRefs(store)
 
 const viewRef = ref(null)
 const importInputRef = ref(null)
@@ -165,10 +178,16 @@ onMounted(() => {
   store.loadHistory()
 })
 
-async function handleSave() {
+async function handleUpdate() {
   if (!isForgeValid.value) return
-  await store.saveToHistory()
-  showToast('✅ 卡片已保存到本地历史记录', 'success')
+  await store.updateRecord()
+  showToast('✅ 记录已覆盖更新', 'success')
+}
+
+async function handleSaveNew() {
+  if (!isForgeValid.value) return
+  await store.saveAsNewRecord()
+  showToast('✅ 已保存到本地记录', 'success')
   showHistory.value = true
 }
 
