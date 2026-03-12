@@ -36,6 +36,36 @@ export const useAchievementStore = defineStore('achievement', () => {
     const historyLoaded = ref(false)
     const selectedHistoryId = ref(null)
 
+    // We'll store the loading promise to await it in save actions
+    let loadPromise = null
+
+    // Load history from IndexedDB correctly
+    async function loadHistory() {
+        if (loadPromise) return loadPromise
+
+        loadPromise = (async () => {
+            try {
+                // console.log('Store: Loading history from IndexedDB...')
+                const data = await localforage.getItem(DB_KEY)
+                if (data && Array.isArray(data)) {
+                    history.value = data
+                    // console.log('Store: Loaded', data.length, 'records')
+                } else {
+                    // console.log('Store: No history found in DB')
+                }
+            } catch (e) {
+                console.warn('Failed to load history:', e)
+            } finally {
+                historyLoaded.value = true
+            }
+        })()
+
+        return loadPromise
+    }
+
+    // Call load immediately on store creation
+    loadHistory()
+
     // Restore draft if exists
     try {
         const draft = localStorage.getItem(DRAFT_KEY)
@@ -71,23 +101,14 @@ export const useAchievementStore = defineStore('achievement', () => {
         }
     }, { deep: true })
 
-    // Load history from IndexedDB
-    async function loadHistory() {
-        try {
-            const data = await localforage.getItem(DB_KEY)
-            if (data && Array.isArray(data)) {
-                history.value = data
-            }
-        } catch (e) {
-            console.warn('Failed to load history:', e)
-        }
-        historyLoaded.value = true
-    }
-
-    // Save history to IndexedDB
+    // Save history to IndexedDB - Ensure we don't overwrite before loading!
     async function persistHistory() {
+        if (!historyLoaded.value && loadPromise) {
+            await loadPromise
+        }
         try {
-            await localforage.setItem(DB_KEY, history.value)
+            await localforage.setItem(DB_KEY, JSON.parse(JSON.stringify(history.value)))
+            // console.log('Store: History persisted to IndexedDB')
         } catch (e) {
             console.warn('Failed to persist history:', e)
         }
