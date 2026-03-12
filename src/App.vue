@@ -33,43 +33,44 @@
       <div class="header-actions">
         <!-- Route-specific actions (mostly for Forge) -->
         <template v-if="$route.name === 'forge'">
-          <button class="btn-ghost" @click="triggerImport" title="从 JSON 或带数据的 PNG 文件恢复成就">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            导入
-          </button>
+          <div class="btn-group">
+            <button class="btn-ghost btn-sm" @click="triggerImport" title="导入 JSON 或带数据的图片">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              导入
+            </button>
+            <button class="btn-ghost btn-sm" @click="handleExportJSON" title="导出成就数据 JSON">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              导出 JSON
+            </button>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn-ghost btn-sm" @click="handleReset" title="重置表单">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.87"/></svg>
+            </button>
+            <button class="btn-ghost btn-sm" @click="handleSave" :disabled="!isForgeValid" title="保存到本地记录">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              保存
+            </button>
+            <button class="btn-ghost btn-sm history-toggle-btn" @click="showHistory = !showHistory" :class="{ active: showHistory }" title="历史记录">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              历史
+            </button>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn-gold btn-sm" @click="handleExportPNG" :disabled="isExporting || isExportingGIF || !isForgeValid">
+              <svg v-if="!isExporting" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <svg v-else class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              PNG
+            </button>
+            <button class="btn-gold btn-sm" @click="handleExportGIF" :disabled="isExporting || isExportingGIF || !isForgeValid" style="background: linear-gradient(135deg, #b38728, #fbf5b7, #b38728);">
+              <svg v-if="!isExportingGIF" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <svg v-else class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              GIF
+            </button>
+          </div>
           <input ref="importInputRef" type="file" accept=".json,.png,.gif" style="display:none" @change="handleImport" />
-
-          <button class="btn-ghost" @click="handleExportJSON" title="将当前成就导出为 JSON">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            导出 JSON
-          </button>
-
-          <button class="btn-ghost" @click="handleReset" title="重置表单">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.87"/></svg>
-            重置
-          </button>
-
-          <button class="btn-ghost" @click="handleSave" :disabled="!isForgeValid" title="将当前卡片保存到本地记录">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-            保存
-          </button>
-
-          <button class="btn-gold" @click="handleExportPNG" :disabled="isExporting || isExportingGIF || !isForgeValid">
-            <svg v-if="!isExporting" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            <svg v-else class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            {{ isExporting ? '生成中…' : '导出 PNG' }}
-          </button>
-
-          <button class="btn-gold" @click="handleExportGIF" :disabled="isExporting || isExportingGIF || !isForgeValid" style="background: linear-gradient(135deg, #b38728, #fbf5b7, #b38728);">
-            <svg v-if="!isExportingGIF" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            <svg v-else class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            {{ isExportingGIF ? '生成中…' : '导出动态 GIF' }}
-          </button>
-
-          <button class="btn-ghost history-toggle-btn" @click="showHistory = !showHistory" :class="{ active: showHistory }" title="显示/隐藏历史记录">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            历史
-          </button>
         </template>
         
         <template v-else-if="$route.name === 'showcase'">
@@ -252,15 +253,34 @@ function handleReset() { if (confirm('重置表单？')) store.resetForm() }
 .app-layout { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg-deep); }
 .app-header { 
   display: flex; align-items: center; justify-content: space-between; 
-  padding: 0 24px; height: 64px; background: rgba(12,12,16,0.95); 
+  padding: 0 24px; height: 64px; background: rgba(12,12,16,0.98); 
   border-bottom: 1px solid var(--border-subtle); backdrop-filter: blur(12px); 
-  position: sticky; top: 0; z-index: 100; gap: 16px;
+  position: sticky; top: 0; z-index: 100; gap: 20px;
 }
-.app-nav { display: flex; gap: 20px; align-items: center; margin-left: 20px; }
+.header-brand { flex: 0 0 auto; }
+.app-nav { flex: 1; display: flex; gap: 24px; align-items: center; justify-content: center; }
+.header-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; }
+
+.btn-group {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+.btn-group .btn-ghost, .btn-group .btn-gold {
+  border-radius: 0;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+.btn-group button:last-child {
+  border-right: none;
+}
+
 .nav-link { 
-  display: flex; align-items: center; gap: 6px; color: var(--text-muted); 
+  display: flex; align-items: center; gap: 8px; color: var(--text-muted); 
   text-decoration: none; font-size: 14px; font-weight: 600; 
-  transition: all 0.2s; padding: 4px 0; border-bottom: 2px solid transparent;
+  transition: all 0.2s; padding: 6px 4px; border-bottom: 2px solid transparent;
 }
 .nav-link:hover { color: var(--gold-2); }
 .nav-link.active { color: var(--gold-2); border-bottom-color: var(--gold-2); }
@@ -290,17 +310,19 @@ function handleReset() { if (confirm('重置表单？')) store.resetForm() }
 .btn-gold { 
   background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fcf6ba, #bf953f);
   background-size: 200% auto; border: none; color: #000; font-weight: 700; padding: 0 16px; 
-  height: 34px; border-radius: 6px; cursor: pointer; transition: all 0.3s;
+  height: 32px; border-radius: 6px; cursor: pointer; transition: all 0.3s;
   display: flex; align-items: center; gap: 6px; font-size: 13px;
 }
 .btn-gold:hover:not(:disabled) { background-position: right center; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(191,149,63,0.4); }
 .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
 
-.btn-ghost { background: transparent; border: 1px solid var(--border-subtle); color: var(--text-secondary); padding: 0 14px; height: 34px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; transition: 0.2s; }
+.btn-ghost { background: transparent; border: 1px solid var(--border-subtle); color: var(--text-secondary); padding: 0 14px; height: 32px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; transition: 0.2s; }
 .btn-ghost:hover:not(:disabled) { border-color: var(--gold-2); color: var(--gold-2); background: rgba(191,149,63,0.05); }
 .btn-ghost:disabled { opacity: 0.3; cursor: not-allowed; }
 
-.btn-danger { background: rgba(224,96,96,0.1); border: 1px solid rgba(224,96,96,0.3); color: #e09090; padding: 0 14px; height: 34px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; transition: 0.2s; }
+.btn-sm { padding: 0 10px; height: 30px; font-size: 12px; }
+
+.btn-danger { background: rgba(224,96,96,0.1); border: 1px solid rgba(224,96,96,0.3); color: #e09090; padding: 0 12px; height: 30px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; transition: 0.2s; }
 .btn-danger:hover { background: rgba(224,96,96,0.2); border-color: #e09090; }
 
 .spin { animation: spin 1s linear infinite; }
