@@ -36,12 +36,18 @@ export const useAchievementStore = defineStore('achievement', () => {
         const draft = localStorage.getItem(DRAFT_KEY)
         if (draft) {
             const parsed = JSON.parse(draft)
-            // Use Object.assign to merge with defaults in case of new properties
-            if (parsed.form) {
-                Object.assign(form.value, parsed.form)
-            }
-            if (parsed.selectedId) {
-                selectedHistoryId.value = parsed.selectedId
+            // Handle both new format {form, selectedId} and old format {title, ...}
+            if (parsed && typeof parsed === 'object') {
+                if (parsed.form) {
+                    Object.assign(form.value, parsed.form)
+                } else {
+                    // Legacy format
+                    Object.assign(form.value, parsed)
+                }
+
+                if (parsed.selectedId) {
+                    selectedHistoryId.value = parsed.selectedId
+                }
             }
         }
     } catch (e) {

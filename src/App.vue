@@ -196,7 +196,8 @@ async function handleExportPNG() {
   isExporting.value = true
   try {
     const record = store.buildRecord()
-    const cardEl = viewRef.value?.$refs.cardRef?.cardRef
+    const cardComp = viewRef.value?.cardRef
+    const cardEl = cardComp?.cardRef
     if (!cardEl) throw new Error('找不到卡片元素')
     await new Promise(r => setTimeout(r, 100))
     const dataUrl = await toPng(cardEl, { quality:1.0, pixelRatio:3, cacheBust:true })
@@ -217,9 +218,9 @@ async function handleExportGIF() {
   isExportingGIF.value = true
   try {
     const record = store.buildRecord()
-    const cardComp = viewRef.value?.$refs.cardRef
+    const cardComp = viewRef.value?.cardRef
     const cardEl = cardComp?.cardRef
-    if (!cardEl || !cardComp.forceShimmerPos) throw new Error('找不到卡片元素')
+    if (!cardEl || !cardComp?.forceShimmerPos) throw new Error('找不到卡片元素')
     const frames = []
     const frameCount = 15
     for (let i = 0; i < frameCount; i++) {
@@ -346,6 +347,24 @@ function handleReset() { if (confirm('重置表单？')) store.resetForm() }
 
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Transitions */
+.toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+
+.history-slide-enter-active, .history-slide-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+.history-slide-enter-from, .history-slide-leave-to {
+  width: 0 !important;
+  opacity: 0;
+}
+
+.modal-fade-enter-active, .modal-fade-leave-active { transition: all 0.25s ease; }
+.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
+.modal-fade-enter-active .modal-box, .modal-fade-leave-active .modal-box { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.modal-fade-enter-from .modal-box, .modal-fade-leave-to .modal-box { transform: scale(0.9) translateY(20px); opacity: 0; }
 
 @media (max-width: 900px) {
   .app-header { height: auto; flex-direction: column; padding: 15px; }

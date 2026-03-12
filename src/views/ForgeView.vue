@@ -57,13 +57,14 @@ import HistoryPanel from '../components/HistoryPanel.vue'
 const store = useAchievementStore()
 const { form } = storeToRefs(store)
 
-const props = defineProps(['showHistory', 'cardRef'])
+const props = defineProps(['showHistory']) // Removed unnecessary cardRef prop
+const cardRef = ref(null) // Added ref for AchievementCard link
 
 const canExport = computed(() =>
   !!(form.value.title?.trim() && form.value.recipient?.trim() && form.value.description?.trim())
 )
 
-defineExpose({ canExport })
+defineExpose({ canExport, cardRef })
 </script>
 
 <style scoped>
