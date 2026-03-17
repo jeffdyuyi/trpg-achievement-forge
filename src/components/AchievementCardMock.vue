@@ -1,7 +1,9 @@
 <template>
   <div class="card-mock">
     <!-- Static visual copy of AchievementCard -->
-    <div class="achievement-card" :class="bgClass" :style="customStyle">
+    <div class="achievement-card" :class="[bgClass, { 'is-vertical': form.metadata?.orientation === 'vertical' }]" :style="customStyle">
+      <!-- Background Image Overlay -->
+      <div v-if="form.style?.backgroundImage" class="card-bg-overlay" :style="{ backgroundImage: `url(${form.style.backgroundImage})` }"></div>
       <div class="card-border-deco"></div>
       
       <div v-if="form.iconBase64" class="card-icon-area">
@@ -53,10 +55,14 @@ const bgClass = computed(() => {
 })
 
 const customStyle = computed(() => {
-  if (props.form.style?.backgroundTheme === 'custom') {
-    return { background: props.form.style?.customBgColor }
+  const styles = {
+    borderColor: props.form.metadata?.borderColor || '#bf953f',
+    borderWidth: `${props.form.metadata?.borderWidth || 1}px`
   }
-  return {}
+  if (props.form.style?.backgroundTheme === 'custom') {
+    styles.background = props.form.style?.customBgColor
+  }
+  return styles
 })
 
 const coreAlignStyle = computed(() => {
@@ -101,6 +107,21 @@ const metaAlignStyle = computed(() => {
   text-align: left;
 }
 
+.achievement-card.is-vertical {
+  width: 400px;
+  min-height: 600px;
+  flex-direction: column;
+}
+
+.card-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+  opacity: 0.6;
+}
+
 /* We need to ensure the global themes are applied or copy them here */
 /* For brevity, assuming the global themes are available in App.vue/style.css */
 
@@ -126,8 +147,16 @@ const metaAlignStyle = computed(() => {
 .card-desc-area { flex: 1; padding: 20px; display: flex; align-items: center; }
 .card-description { color: rgba(255,255,255,0.85); line-height: 1.6; font-family: 'LXGW WenKai', serif; margin: 0; }
 
-.card-meta-area { width: 160px; padding: 20px; display: flex; flex-direction: column; justify-content: flex-end; gap: 5px; font-size: 11px; color: rgba(255,255,255,0.5); }
+.card-meta-area { width: 160px; padding: 20px; display: flex; flex-direction: column; justify-content: flex-end; gap: 5px; font-size: 11px; color: rgba(255,255,255,0.5); position: relative; z-index: 2; }
 .card-meta-item { display: flex; align-items: center; gap: 5px; }
 
-.card-border-deco { position: absolute; inset: 0; pointer-events: none; border: 1px solid rgba(191,149,63,0.1); border-radius: 10px; z-index: 5; }
+.is-vertical .card-icon-area { width: 100%; padding-top: 32px; padding-bottom: 0; }
+.is-vertical .card-icon-wrap { width: 100px; height: 100px; }
+.is-vertical .card-core { width: 100%; padding: 24px; }
+.is-vertical .card-divider { width: 80%; height: 1px; margin: 0 auto; background: rgba(191,149,63,0.2); }
+.is-vertical .card-desc-area { padding: 24px; }
+.is-vertical .card-meta-area { width: 100%; padding: 24px; flex-direction: row; justify-content: center; gap: 16px; }
+
+.card-border-deco { position: absolute; inset: 0; pointer-events: none; border: inherit; border-radius: 10px; z-index: 5; }
+.card-core, .card-desc-area { position: relative; z-index: 2; }
 </style>

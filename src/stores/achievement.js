@@ -29,6 +29,10 @@ export const useAchievementStore = defineStore('achievement', () => {
         backgroundTheme: 'dark',
         iconBase64: '',
         customBgColor: '#0f0c20',
+        orientation: 'horizontal',
+        borderColor: '#bf953f',
+        borderWidth: 1,
+        backgroundImage: '',
     })
 
     // History and Selection State
@@ -131,10 +135,14 @@ export const useAchievementStore = defineStore('achievement', () => {
                 gameName: form.value.gameName,
                 issuer: form.value.issuer,
                 date: form.value.date,
+                orientation: form.value.orientation,
+                borderColor: form.value.borderColor,
+                borderWidth: form.value.borderWidth,
             },
             style: {
                 backgroundTheme: form.value.backgroundTheme,
                 customBgColor: form.value.customBgColor,
+                backgroundImage: form.value.backgroundImage,
             },
             savedAt: new Date().toISOString(),
         }
@@ -208,6 +216,10 @@ export const useAchievementStore = defineStore('achievement', () => {
         form.value.date = record.metadata?.date || getLocalDateString()
         form.value.backgroundTheme = record.style?.backgroundTheme || 'dark'
         form.value.customBgColor = record.style?.customBgColor || '#0f0c20'
+        form.value.orientation = record.metadata?.orientation || 'horizontal'
+        form.value.borderColor = record.metadata?.borderColor || '#bf953f'
+        form.value.borderWidth = record.metadata?.borderWidth || 1
+        form.value.backgroundImage = record.style?.backgroundImage || ''
         selectedHistoryId.value = record.id
     }
 
@@ -227,6 +239,10 @@ export const useAchievementStore = defineStore('achievement', () => {
             backgroundTheme: 'dark',
             iconBase64: '',
             customBgColor: '#0f0c20',
+            orientation: 'horizontal',
+            borderColor: '#bf953f',
+            borderWidth: 1,
+            backgroundImage: '',
         }
         selectedHistoryId.value = null
     }

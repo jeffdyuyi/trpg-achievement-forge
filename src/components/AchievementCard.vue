@@ -4,9 +4,11 @@
     <div
       ref="cardRef"
       class="achievement-card"
-      :class="bgClass"
+      :class="[bgClass, { 'is-vertical': form.orientation === 'vertical' }]"
       :style="customStyle"
     >
+      <!-- Background Image Overlay -->
+      <div v-if="form.backgroundImage" class="card-bg-overlay" :style="{ backgroundImage: `url(${form.backgroundImage})` }"></div>
       <!-- Decorative border overlay -->
       <div class="card-border-deco"></div>
 
@@ -94,10 +96,15 @@ const bgClass = computed(() => {
 })
 
 const customStyle = computed(() => {
-  if (form.value.backgroundTheme === 'custom') {
-    return { background: form.value.customBgColor }
+  const styles = {
+    borderColor: form.value.borderColor,
+    borderWidth: `${form.value.borderWidth}px`
   }
-  return {}
+  
+  if (form.value.backgroundTheme === 'custom') {
+    styles.background = form.value.customBgColor
+  }
+  return styles
 })
 
 // Alignment computed styles
@@ -149,6 +156,22 @@ const metaAlignStyle = computed(() => {
     inset 0 0 40px rgba(0,0,0,0.5);
   /* Noise texture */
   background-size: auto, cover;
+  transition: width 0.3s, min-height 0.3s;
+}
+
+.achievement-card.is-vertical {
+  width: 400px;
+  min-height: 600px;
+  flex-direction: column;
+}
+
+.card-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+  opacity: 0.6;
 }
 
 /* Corner decorations */
@@ -177,6 +200,7 @@ const metaAlignStyle = computed(() => {
     transparent 50%,
     rgba(191,149,63,0.04) 100%
   );
+  border: inherit;
 }
 
 /* Icon area */
@@ -215,6 +239,16 @@ const metaAlignStyle = computed(() => {
   border-style: dashed;
 }
 
+.is-vertical .card-icon-area {
+  width: 100%;
+  padding-top: 32px;
+  padding-bottom: 0;
+}
+.is-vertical .card-icon-wrap {
+  width: 100px;
+  height: 100px;
+}
+
 /* Core info */
 .card-core {
   flex: 0 0 auto;
@@ -225,6 +259,11 @@ const metaAlignStyle = computed(() => {
   justify-content: center;
   position: relative;
   z-index: 2;
+}
+
+.is-vertical .card-core {
+  width: 100%;
+  padding: 24px;
 }
 
 .card-badge-label {
@@ -275,6 +314,19 @@ const metaAlignStyle = computed(() => {
   z-index: 2;
 }
 
+.is-vertical .card-divider {
+  width: 80%;
+  height: 1px;
+  margin: 0 auto;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(191,149,63,0.4) 20%,
+    rgba(191,149,63,0.4) 80%,
+    transparent
+  );
+}
+
 /* Description area */
 .card-desc-area {
   flex: 1;
@@ -283,6 +335,10 @@ const metaAlignStyle = computed(() => {
   align-items: center;
   position: relative;
   z-index: 2;
+}
+
+.is-vertical .card-desc-area {
+  padding: 24px;
 }
 .card-description {
   line-height: 1.7;
@@ -322,6 +378,30 @@ const metaAlignStyle = computed(() => {
   gap: 4px;
   position: relative;
   z-index: 2;
+}
+
+.is-vertical .card-meta-area {
+  width: 100%;
+  padding: 24px;
+  align-items: center;
+  flex-direction: row;
+  justify-content: center;
+  gap: 16px;
+}
+.is-vertical .card-meta-area::before {
+  left: 16px;
+  right: 16px;
+  top: 0;
+  bottom: auto;
+  height: 1px;
+  width: auto;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(191,149,63,0.3) 20%,
+    rgba(191,149,63,0.3) 80%,
+    transparent
+  );
 }
 .card-meta-item {
   display: flex;

@@ -5,6 +5,29 @@
       编辑成就内容
     </h2>
 
+    <!-- Orientation Toggle -->
+    <div class="form-group">
+      <label class="form-label">卡片版式</label>
+      <div class="orientation-toggle">
+        <button 
+          class="toggle-btn" 
+          :class="{ active: form.orientation === 'horizontal' }"
+          @click="form.orientation = 'horizontal'"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+          横版
+        </button>
+        <button 
+          class="toggle-btn" 
+          :class="{ active: form.orientation === 'vertical' }"
+          @click="form.orientation = 'vertical'"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+          竖版
+        </button>
+      </div>
+    </div>
+
     <!-- Icon Upload -->
     <div class="form-group">
       <label class="form-label">成就图标 <span class="optional-tag">可选</span></label>
@@ -175,6 +198,57 @@
         <span style="color:var(--text-secondary);font-size:13px;">自定义背景色</span>
       </div>
     </div>
+
+    <!-- Background Image Upload -->
+    <div class="form-group">
+      <label class="form-label">背景图片 <span class="optional-tag">可选</span></label>
+      <div class="icon-upload-area bg-upload-area" @click="triggerBgUpload" @dragover.prevent @drop.prevent="handleBgDrop">
+        <img v-if="form.backgroundImage" :src="form.backgroundImage" class="bg-preview-img" />
+        <div v-else class="icon-upload-placeholder">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>上传背景图</span>
+        </div>
+        <input
+          ref="bgInputRef"
+          type="file"
+          accept="image/*"
+          style="display:none"
+          @change="handleBgChange"
+        />
+      </div>
+      <button v-if="form.backgroundImage" class="btn-danger mt-2" @click="form.backgroundImage = ''">
+        移除背景图
+      </button>
+    </div>
+
+    <!-- Border Customization -->
+    <div class="form-group">
+      <label class="form-label">边框样式</label>
+      <div class="border-style-row">
+        <div class="color-group">
+          <input type="color" v-model="form.borderColor" class="color-picker" />
+          <span class="tiny-label">边框颜色</span>
+        </div>
+        <div class="width-group">
+          <div class="slider-header">
+            <span class="tiny-label">边框粗细</span>
+            <span class="tiny-val">{{ form.borderWidth }}px</span>
+          </div>
+          <input 
+            type="range" 
+            min="0" 
+            max="10" 
+            step="0.5"
+            v-model.number="form.borderWidth" 
+            class="tiny-slider"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -188,6 +262,7 @@ const store = useAchievementStore()
 const { form } = storeToRefs(store)
 
 const iconInputRef = ref(null)
+const bgInputRef = ref(null)
 
 const themes = [
   { id: 'dark', label: '暗黑', preview: 'linear-gradient(135deg, #0f0c20, #1a1228)' },
@@ -200,6 +275,10 @@ const themes = [
 
 function triggerIconUpload() {
   iconInputRef.value?.click()
+}
+
+function triggerBgUpload() {
+  bgInputRef.value?.click()
 }
 
 function processImageFile(file) {
@@ -232,6 +311,24 @@ function handleIconChange(e) {
 
 function handleIconDrop(e) {
   processImageFile(e.dataTransfer.files[0])
+}
+
+function processBgFile(file) {
+  if (!file || !file.type.startsWith('image/')) return
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    form.value.backgroundImage = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+function handleBgChange(e) {
+  processBgFile(e.target.files[0])
+  e.target.value = ''
+}
+
+function handleBgDrop(e) {
+  processBgFile(e.dataTransfer.files[0])
 }
 </script>
 
@@ -454,6 +551,80 @@ function handleIconDrop(e) {
 .align-btn.active {
   background: rgba(191,149,63,0.2);
   color: var(--gold-2);
+}
+
+/* Orientation toggle */
+.orientation-toggle {
+  display: flex;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid var(--border-subtle);
+}
+.toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.toggle-btn.active {
+  background: rgba(191,149,63,0.15);
+  color: var(--gold-2);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Background image preview */
+.bg-upload-area {
+  min-height: 120px;
+}
+.bg-preview-img {
+  max-width: 100%;
+  max-height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Border styles */
+.border-style-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.color-group, .width-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.width-group {
+  flex: 1;
+}
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+}
+.tiny-label {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.tiny-val {
+  font-size: 10px;
+  color: var(--gold-2);
+}
+.tiny-slider {
+  width: 100%;
+  height: 4px;
+  accent-color: var(--gold-1);
+  cursor: pointer;
 }
 
 .mt-2 { margin-top: 8px; }
