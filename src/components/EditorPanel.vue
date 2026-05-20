@@ -5,25 +5,29 @@
       编辑成就内容
     </h2>
 
-    <!-- Orientation Toggle -->
+    <!-- Card Style Selector -->
     <div class="form-group">
-      <label class="form-label">卡片版式</label>
-      <div class="orientation-toggle">
-        <button 
-          class="toggle-btn" 
-          :class="{ active: form.orientation === 'horizontal' }"
-          @click="form.orientation = 'horizontal'"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
-          横版
+      <label class="form-label">卡片样式</label>
+      <div class="style-selector">
+        <button class="style-btn" :class="{ active: form.cardStyle === 'classic' && form.orientation === 'horizontal' }"
+          @click="form.cardStyle = 'classic'; form.orientation = 'horizontal'">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+          经典横版
         </button>
-        <button 
-          class="toggle-btn" 
-          :class="{ active: form.orientation === 'vertical' }"
-          @click="form.orientation = 'vertical'"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
-          竖版
+        <button class="style-btn" :class="{ active: form.cardStyle === 'classic' && form.orientation === 'vertical' }"
+          @click="form.cardStyle = 'classic'; form.orientation = 'vertical'">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+          经典竖版
+        </button>
+        <button class="style-btn style-btn-xbox" :class="{ active: form.cardStyle === 'xbox' }"
+          @click="form.cardStyle = 'xbox'; form.orientation = 'horizontal'">
+          <span class="style-icon-xbox">X</span>
+          Xbox
+        </button>
+        <button class="style-btn style-btn-ps" :class="{ active: form.cardStyle === 'ps' }"
+          @click="form.cardStyle = 'ps'; form.orientation = 'horizontal'">
+          <span class="style-icon-ps">PS</span>
+          PlayStation
         </button>
       </div>
     </div>
@@ -52,6 +56,31 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
         移除图标
       </button>
+
+      <!-- 预设图标选取 -->
+      <div class="preset-icon-section">
+        <div class="preset-section-label">预设图标</div>
+        <div class="preset-icon-grid">
+          <button
+            v-for="preset in PRESET_ICONS"
+            :key="preset.id"
+            class="preset-icon-btn"
+            :title="preset.desc"
+            @click="applyPresetIcon(preset.id)"
+          >{{ preset.label }}</button>
+        </div>
+        <div class="custom-char-row">
+          <input
+            class="forge-input custom-char-input"
+            v-model="customChar"
+            maxlength="1"
+            placeholder="单字"
+          />
+          <button class="btn-apply-char" @click="applyCustomChar" :disabled="!customChar.trim()">
+            生成像素图标
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Title (required) -->
@@ -91,6 +120,17 @@
       />
     </div>
 
+    <!-- Achievement Value: Xbox 点数/稀有度, PS 奖杯等级 -->
+    <div v-if="form.cardStyle !== 'classic'" class="form-group">
+      <label class="form-label">
+        <span v-if="form.cardStyle === 'xbox'">点数 / 稀有度 <span class="optional-tag">可选</span></span>
+        <span v-else>奖杯等级 <span class="optional-tag">可选 · 填"金杯/银杯/铜杯/铂金"</span></span>
+      </label>
+      <RichInput
+        v-model="form.achievementValue"
+        :placeholder="form.cardStyle === 'xbox' ? '如：20G 或 稀有1%' : '如：金杯'"
+      />
+    </div>
     <!-- Description (required) -->
     <div class="form-group">
       <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
@@ -257,9 +297,24 @@ import { ref } from 'vue'
 import { useAchievementStore } from '../stores/achievement.js'
 import { storeToRefs } from 'pinia'
 import RichInput from './RichInput.vue'
+import { generatePresetIcon, PRESET_ICONS } from '../utils/iconPresets.js'
 
 const store = useAchievementStore()
 const { form } = storeToRefs(store)
+
+// 自定义单字图标
+const customChar = ref('')
+
+function applyPresetIcon(id) {
+  form.value.iconBase64 = generatePresetIcon(id)
+}
+
+function applyCustomChar() {
+  const ch = customChar.value.trim()
+  if (!ch) return
+  form.value.iconBase64 = generatePresetIcon(ch)
+  customChar.value = ''
+}
 
 const iconInputRef = ref(null)
 const bgInputRef = ref(null)
@@ -553,34 +608,56 @@ function handleBgDrop(e) {
   color: var(--gold-2);
 }
 
-/* Orientation toggle */
-.orientation-toggle {
-  display: flex;
-  background: rgba(0,0,0,0.2);
-  border-radius: 8px;
-  padding: 4px;
-  gap: 4px;
-  border: 1px solid var(--border-subtle);
+/* Card style selector */
+.style-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }
-.toggle-btn {
-  flex: 1;
+.style-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
+  gap: 6px;
+  padding: 8px 6px;
+  border-radius: 7px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(0,0,0,0.2);
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
+  font-family: 'LXGW WenKai', 'Inter', sans-serif;
   transition: all 0.2s;
 }
-.toggle-btn.active {
+.style-btn:hover {
+  border-color: var(--border-gold);
+  color: var(--text-primary);
+}
+.style-btn.active {
   background: rgba(191,149,63,0.15);
+  border-color: rgba(191,149,63,0.6);
   color: var(--gold-2);
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+.style-btn-xbox.active {
+  background: rgba(16,124,16,0.2);
+  border-color: rgba(16,124,16,0.7);
+  color: #4ddc4d;
+}
+.style-btn-ps.active {
+  background: rgba(0,55,160,0.2);
+  border-color: rgba(40,100,220,0.6);
+  color: #80aaff;
+}
+.style-icon-xbox {
+  font-size: 11px;
+  font-weight: 900;
+  color: inherit;
+}
+.style-icon-ps {
+  font-size: 10px;
+  font-weight: 900;
+  color: inherit;
 }
 
 /* Background image preview */
@@ -627,5 +704,78 @@ function handleBgDrop(e) {
   cursor: pointer;
 }
 
+/* Preset icon section */
+.preset-icon-section {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.preset-section-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.preset-icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.preset-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(0,0,0,0.25);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'LXGW WenKai', 'Microsoft YaHei', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+  padding: 0;
+}
+.preset-icon-btn:hover {
+  border-color: var(--border-gold);
+  background: rgba(191,149,63,0.12);
+  transform: scale(1.1);
+}
+.custom-char-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.custom-char-input {
+  width: 52px !important;
+  text-align: center;
+  font-size: 16px;
+  padding: 6px 4px !important;
+}
+.btn-apply-char {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(191,149,63,0.1);
+  color: var(--gold-2);
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'LXGW WenKai', 'Inter', sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-apply-char:hover:not(:disabled) {
+  background: rgba(191,149,63,0.2);
+  border-color: var(--border-gold);
+}
+.btn-apply-char:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .mt-2 { margin-top: 8px; }
 </style>
+

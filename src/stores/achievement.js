@@ -33,6 +33,8 @@ export const useAchievementStore = defineStore('achievement', () => {
         borderColor: '#bf953f',
         borderWidth: 1,
         backgroundImage: '',
+        cardStyle: 'classic',        // 'classic' | 'xbox' | 'ps'
+        achievementValue: '',        // Xbox: 点数/稀有度; PS: 奖杯等级
     })
 
     // History and Selection State
@@ -138,6 +140,8 @@ export const useAchievementStore = defineStore('achievement', () => {
                 orientation: form.value.orientation,
                 borderColor: form.value.borderColor,
                 borderWidth: form.value.borderWidth,
+                cardStyle: form.value.cardStyle,
+                achievementValue: form.value.achievementValue,
             },
             style: {
                 backgroundTheme: form.value.backgroundTheme,
@@ -220,6 +224,8 @@ export const useAchievementStore = defineStore('achievement', () => {
         form.value.borderColor = record.metadata?.borderColor || '#bf953f'
         form.value.borderWidth = record.metadata?.borderWidth || 1
         form.value.backgroundImage = record.style?.backgroundImage || ''
+        form.value.cardStyle = record.metadata?.cardStyle || 'classic'
+        form.value.achievementValue = record.metadata?.achievementValue || ''
         selectedHistoryId.value = record.id
     }
 
@@ -243,6 +249,8 @@ export const useAchievementStore = defineStore('achievement', () => {
             borderColor: '#bf953f',
             borderWidth: 1,
             backgroundImage: '',
+            cardStyle: 'classic',
+            achievementValue: '',
         }
         selectedHistoryId.value = null
     }

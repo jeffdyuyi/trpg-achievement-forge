@@ -16,7 +16,7 @@
           实时预览
         </div>
         <div class="card-container">
-          <AchievementCard ref="cardRef" />
+          <component :is="activeCardComponent" ref="cardRef" />
         </div>
 
         <!-- Validation hint -->
@@ -52,13 +52,22 @@ import { useAchievementStore } from '../stores/achievement.js'
 import { storeToRefs } from 'pinia'
 import EditorPanel from '../components/EditorPanel.vue'
 import AchievementCard from '../components/AchievementCard.vue'
+import AchievementCardXbox from '../components/AchievementCardXbox.vue'
+import AchievementCardPS from '../components/AchievementCardPS.vue'
 import HistoryPanel from '../components/HistoryPanel.vue'
 
 const store = useAchievementStore()
 const { form } = storeToRefs(store)
 
-const props = defineProps(['showHistory']) // Removed unnecessary cardRef prop
-const cardRef = ref(null) // Added ref for AchievementCard link
+const props = defineProps(['showHistory'])
+const cardRef = ref(null)
+
+// 当前渲染的卡片组件
+const activeCardComponent = computed(() => {
+  if (form.value.cardStyle === 'xbox') return AchievementCardXbox
+  if (form.value.cardStyle === 'ps') return AchievementCardPS
+  return AchievementCard
+})
 
 const canExport = computed(() =>
   !!(form.value.title?.trim() && form.value.recipient?.trim() && form.value.description?.trim())
