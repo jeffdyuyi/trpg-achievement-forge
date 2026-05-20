@@ -42,14 +42,6 @@
         <div v-if="form.achievementValue" class="ps-trophy-badge" :class="trophyClass">
           {{ trophyIcon }} {{ form.achievementValue }}
         </div>
-        <!-- PS 品牌标识（SVG 风格圆形） -->
-        <div class="ps-brand-mark">
-          <svg viewBox="0 0 36 36" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="18" cy="18" r="16" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-            <text x="18" y="23" text-anchor="middle" font-size="14" font-weight="900"
-              fill="rgba(255,255,255,0.5)" font-family="Arial, sans-serif">PS</text>
-          </svg>
-        </div>
       </div>
     </div>
   </div>
@@ -300,8 +292,4 @@ defineExpose({ cardRef, isExporting, forceShimmerPos })
   border: 1px solid rgba(200, 100, 40, 0.4);
 }
 
-/* PS 品牌标识 */
-.ps-brand-mark {
-  opacity: 0.5;
-}
 </style>
