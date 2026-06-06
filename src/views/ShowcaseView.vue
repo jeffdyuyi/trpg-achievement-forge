@@ -56,12 +56,20 @@
 
     <!-- Grid View -->
     <div v-else-if="viewMode === 'grid'" class="grid-container">
-      <div v-for="record in sortedHistory" :key="record.id" class="grid-item" @click="openPreview(record)">
+      <div 
+        v-for="record in sortedHistory" 
+        :key="record.id" 
+        class="grid-item" 
+        :class="{ 'item-rare': isRare(record) }"
+        @click="openPreview(record)"
+      >
         <div class="item-card-mini" :style="{ background: getThemeBg(record) }">
-           <div class="mini-badge">🏆</div>
+           <div class="card-noise"></div>
+           <div class="mini-badge">{{ isRare(record) ? '✨ 🏅' : '🏆' }}</div>
            <div class="mini-title" v-html="record.title"></div>
            <div class="mini-recipient">{{ record.recipient }}</div>
            <div class="mini-date">{{ record.metadata?.date }}</div>
+           <div v-if="isRare(record)" class="rare-glow-effect"></div>
         </div>
       </div>
     </div>
@@ -80,8 +88,10 @@
             </button>
           </div>
           <div class="modal-body">
-             <div class="card-preview-wrap">
-                <AchievementCardMock :form="previewRecord" />
+             <div class="card-preview-wrap" ref="previewContainerRef">
+                <div class="card-scaler" :style="scalerStyle">
+                   <component :is="getCardComponent(previewRecord)" :form="previewRecord" />
+                </div>
              </div>
              <div class="modal-actions">
                 <button class="btn-ghost" @click="editRecord(previewRecord)">
@@ -101,16 +111,95 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAchievementStore } from '../stores/achievement.js'
 import { storeToRefs } from 'pinia'
 import TimelineView from '../components/TimelineView.vue'
-import AchievementCardMock from '../components/AchievementCardMock.vue'
+import AchievementCard from '../components/AchievementCard.vue'
+import AchievementCardXbox from '../components/AchievementCardXbox.vue'
+import AchievementCardPS from '../components/AchievementCardPS.vue'
+import AchievementCardSteam from '../components/AchievementCardSteam.vue'
+import AchievementCardPixel from '../components/AchievementCardPixel.vue'
+import AchievementCardParchment from '../components/AchievementCardParchment.vue'
 
 const store = useAchievementStore()
 const { history } = storeToRefs(store)
 const router = useRouter()
+
+// Responsive scaling for preview modal
+const previewContainerRef = ref(null)
+const containerWidth = ref(1000)
+let resizeObserver = null
+
+function getCardComponent(record) {
+  if (!record) return AchievementCard
+  if (record.cardStyle === 'xbox') return AchievementCardXbox
+  if (record.cardStyle === 'ps') return AchievementCardPS
+  if (record.cardStyle === 'steam') return AchievementCardSteam
+  if (record.cardStyle === 'pixel') return AchievementCardPixel
+  if (record.cardStyle === 'parchment') return AchievementCardParchment
+  return AchievementCard
+}
+
+watch(previewRecord, async (newVal) => {
+  if (newVal) {
+    // Wait for modal to render in DOM
+    await new Promise(resolve => setTimeout(resolve, 80))
+    if (previewContainerRef.value) {
+      containerWidth.value = previewContainerRef.value.getBoundingClientRect().width || 1000
+      if (!resizeObserver) {
+        resizeObserver = new ResizeObserver((entries) => {
+          for (let entry of entries) {
+            containerWidth.value = entry.contentRect.width || 1000
+          }
+        })
+      }
+      resizeObserver.observe(previewContainerRef.value)
+    }
+  } else {
+    if (resizeObserver) {
+      resizeObserver.disconnect()
+      resizeObserver = null
+    }
+  }
+})
+
+const cardWidth = computed(() => {
+  if (!previewRecord.value) return 1000
+  const style = previewRecord.value.cardStyle || 'classic'
+  if (style === 'xbox' || style === 'ps' || style === 'steam' || style === 'pixel' || style === 'parchment') return 580
+  const isVertical = previewRecord.value.metadata?.orientation === 'vertical'
+  return isVertical ? 416 : 1016
+})
+
+const cardHeight = computed(() => {
+  if (!previewRecord.value) return 156
+  const style = previewRecord.value.cardStyle || 'classic'
+  if (style === 'xbox') return 130
+  if (style === 'ps') return 120
+  if (style === 'steam' || style === 'pixel' || style === 'parchment') return 180
+  const isVertical = previewRecord.value.metadata?.orientation === 'vertical'
+  return isVertical ? 616 : 156
+})
+
+const scaleFactor = computed(() => {
+  if (!containerWidth.value || !cardWidth.value) return 1
+  return Math.min(1, containerWidth.value / cardWidth.value)
+})
+
+const scalerStyle = computed(() => {
+  const s = scaleFactor.value
+  if (s >= 1) return { width: '100%', display: 'flex', justifyContent: 'center' }
+  return {
+    transform: `scale(${s})`,
+    transformOrigin: 'top center',
+    width: `${cardWidth.value}px`,
+    height: `${cardHeight.value}px`,
+    marginBottom: `-${cardHeight.value * (1 - s)}px`,
+    flexShrink: 0
+  }
+})
 
 const viewMode = ref('grid')
 const searchQuery = ref('')
@@ -162,6 +251,14 @@ function getThemeBg(record) {
   if (theme === 'starry') return 'radial-gradient(ellipse at 30% 30%, #1a1040, #080820)'
   if (theme === 'minimal') return 'linear-gradient(135deg, #111118, #1c1c28)'
   return '#1a1a20'
+}
+
+function isRare(record) {
+  const val = String(record.achievementValue || '').toLowerCase()
+  if (val.includes('铂') || val.includes('platinum') || val.includes('gold') || val.includes('金')) {
+    return true
+  }
+  return record.title?.length > 8
 }
 
 function openPreview(record) {
@@ -280,59 +377,99 @@ async function deleteRecord(record) {
 /* Grid layout */
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-auto-rows: 156px;
   gap: 20px;
 }
 .grid-item {
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: var(--transition-spring);
+  grid-column: span 1;
+  grid-row: span 1;
 }
-.grid-item:hover {
-  transform: translateY(-4px);
+.grid-item.item-rare {
+  grid-column: span 2;
 }
 .item-card-mini {
-  height: 140px;
-  border-radius: 10px;
-  border: 1px solid rgba(191,149,63,0.3);
-  padding: 16px;
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(191,149,63,0.2);
+  padding: 20px;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  background-size: cover;
+  background-position: center;
+  transition: var(--transition-spring);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  font-family: var(--font-sans);
+}
+.item-card-mini .card-noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 2;
 }
 .item-card-mini::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.6) 100%);
+  background: linear-gradient(180deg, transparent 30%, rgba(12,12,16,0.85) 100%);
+  z-index: 1;
+}
+.grid-item:hover .item-card-mini {
+  transform: translateY(-4px) scale(1.01);
+  border-color: var(--border-gold);
+  box-shadow: 0 15px 35px rgba(191, 149, 63, 0.22);
+}
+.item-rare .item-card-mini {
+  border-color: rgba(191, 149, 63, 0.55);
+}
+.rare-glow-effect {
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle at center, rgba(191, 149, 63, 0.12) 0%, transparent 60%);
+  opacity: 0.8;
+  animation: pulseGlow 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 0.85; }
 }
 .mini-badge {
-  font-size: 16px;
+  font-size: 15px;
   margin-bottom: 8px;
-  z-index: 1;
+  z-index: 3;
 }
 .mini-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  font-family: var(--font-serif);
+  font-weight: 800;
   color: var(--gold-2);
   margin-bottom: 4px;
-  z-index: 1;
+  z-index: 3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  letter-spacing: -0.01em;
 }
 .mini-recipient {
-  font-size: 12px;
-  color: rgba(255,255,255,0.8);
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.85);
   margin-top: auto;
-  z-index: 1;
+  z-index: 3;
 }
 .mini-date {
   font-size: 10px;
   color: rgba(255,255,255,0.4);
-  z-index: 1;
+  z-index: 3;
+  font-family: var(--font-mono);
 }
 
 .empty-state {
@@ -360,6 +497,12 @@ async function deleteRecord(record) {
   transform-origin: top center;
   padding: 20px;
   background: #08080a;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+.card-scaler {
+  transition: transform 0.15s ease-out;
 }
 .modal-actions {
   display: flex;

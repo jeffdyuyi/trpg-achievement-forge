@@ -1,16 +1,24 @@
 <template>
   <div class="card-wrapper" :class="{ 'is-exporting': isExporting }">
-    <!-- The actual achievement card for export -->
+    <!-- Outer bezel enclosure -->
     <div
       ref="cardRef"
-      class="achievement-card"
-      :class="[bgClass, { 'is-vertical': form.orientation === 'vertical' }]"
-      :style="customStyle"
+      class="card-outer-bezel"
+      :class="{ 'is-vertical': form.orientation === 'vertical' }"
+      :style="outerBezelStyle"
     >
-      <!-- Background Image Overlay -->
-      <div v-if="form.backgroundImage" class="card-bg-overlay" :style="{ backgroundImage: `url(${form.backgroundImage})` }"></div>
-      <!-- Decorative border overlay -->
-      <div class="card-border-deco"></div>
+      <!-- The actual achievement card inside -->
+      <div
+        class="achievement-card"
+        :class="[bgClass]"
+        :style="customStyle"
+      >
+        <!-- Noise Overlay -->
+        <div class="card-noise"></div>
+        <!-- Background Image Overlay -->
+        <div v-if="form.backgroundImage" class="card-bg-overlay" :style="{ backgroundImage: `url(${form.backgroundImage})` }"></div>
+        <!-- Decorative border overlay -->
+        <div class="card-border-deco"></div>
 
       <!-- Left: Icon area -->
       <div v-if="form.iconBase64" class="card-icon-area">
@@ -63,15 +71,22 @@
       <div class="card-corner card-corner-br"></div>
     </div>
   </div>
+</div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useAchievementStore } from '../stores/achievement.js'
-import { storeToRefs } from 'pinia'
+
+const props = defineProps({
+  form: {
+    type: Object,
+    default: null
+  }
+})
 
 const store = useAchievementStore()
-const { form } = storeToRefs(store)
+const form = computed(() => props.form || store.form)
 
 const cardRef = ref(null)
 const titleRef = ref(null)
@@ -107,6 +122,15 @@ const customStyle = computed(() => {
   return styles
 })
 
+const outerBezelStyle = computed(() => {
+  return {
+    borderColor: form.value.borderColor ? `${form.value.borderColor}33` : 'rgba(191, 149, 63, 0.15)',
+    boxShadow: form.value.borderColor 
+      ? `0 20px 50px rgba(0, 0, 0, 0.45), 0 0 30px ${form.value.borderColor}15`
+      : '0 20px 50px rgba(0, 0, 0, 0.45)'
+  }
+})
+
 // Alignment computed styles
 const coreAlignStyle = computed(() => {
   const align = form.value.coreAlign || 'left'
@@ -136,33 +160,57 @@ const metaAlignStyle = computed(() => {
   align-items: center;
   width: 100%;
   padding: 20px 0;
-  filter: drop-shadow(0 8px 40px rgba(191,149,63,0.18));
+  filter: drop-shadow(0 12px 48px rgba(191,149,63,0.15));
+}
+
+.card-outer-bezel {
+  position: relative;
+  width: 1000px;
+  min-height: 156px; /* 140px inner height + 16px total padding */
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(191, 149, 63, 0.15);
+  padding: 8px;
+  border-radius: 18px;
+  transition: var(--transition-spring);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: stretch;
+}
+
+.card-outer-bezel.is-vertical {
+  width: 400px;
+  min-height: 616px;
+  border-radius: 24px;
 }
 
 .achievement-card {
   position: relative;
-  width: 1000px;
-  min-height: 140px;
-  height: auto;
-  max-width: 100%;
+  width: 100%;
   display: flex;
   align-items: stretch;
-  border-radius: 10px;
+  border-radius: 10px; /* Concentric radius calc: 18px - 8px */
   overflow: hidden;
   border: 1px solid rgba(191,149,63,0.45);
   box-shadow:
     0 0 0 1px rgba(0,0,0,0.6),
     0 0 30px rgba(191,149,63,0.12),
     inset 0 0 40px rgba(0,0,0,0.5);
-  /* Noise texture */
   background-size: auto, cover;
-  transition: width 0.3s, min-height 0.3s;
+  transition: var(--transition-spring);
 }
 
-.achievement-card.is-vertical {
-  width: 400px;
-  min-height: 600px;
+.card-outer-bezel.is-vertical .achievement-card {
+  border-radius: 16px; /* Concentric: 24px - 8px */
   flex-direction: column;
+}
+
+.card-noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 3;
 }
 
 .card-bg-overlay {
@@ -171,7 +219,7 @@ const metaAlignStyle = computed(() => {
   background-size: cover;
   background-position: center;
   z-index: 1;
-  opacity: 0.6;
+  opacity: 0.65;
 }
 
 /* Corner decorations */
@@ -276,11 +324,13 @@ const metaAlignStyle = computed(() => {
 }
 
 .card-title {
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1.25;
   margin: 0 0 8px;
   word-break: break-all;
-  font-family: 'LXGW WenKai', serif;
+  font-family: var(--font-serif);
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .card-recipient {
@@ -342,9 +392,9 @@ const metaAlignStyle = computed(() => {
 }
 .card-description {
   line-height: 1.7;
-  color: rgba(240,234,216,0.82);
+  color: rgba(240,234,216,0.85);
   margin: 0;
-  font-family: 'LXGW WenKai', serif;
+  font-family: var(--font-serif);
   word-break: break-all;
   white-space: pre-wrap;
 }
@@ -407,9 +457,10 @@ const metaAlignStyle = computed(() => {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 10.5px;
+  font-size: 10px;
   color: rgba(168,155,122,0.65);
   line-height: 1.5;
+  font-family: var(--font-mono);
 }
 .card-meta-icon {
   font-size: 11px;

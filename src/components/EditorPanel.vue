@@ -29,6 +29,21 @@
           <span class="style-icon-ps">PS</span>
           PlayStation
         </button>
+        <button class="style-btn style-btn-steam" :class="{ active: form.cardStyle === 'steam' }"
+          @click="form.cardStyle = 'steam'; form.orientation = 'horizontal'">
+          <span class="style-icon-steam">S</span>
+          Steam
+        </button>
+        <button class="style-btn style-btn-pixel" :class="{ active: form.cardStyle === 'pixel' }"
+          @click="form.cardStyle = 'pixel'; form.orientation = 'horizontal'">
+          <span class="style-icon-pixel">P</span>
+          复古像素
+        </button>
+        <button class="style-btn style-btn-parchment" :class="{ active: form.cardStyle === 'parchment' }"
+          @click="form.cardStyle = 'parchment'; form.orientation = 'horizontal'">
+          <span class="style-icon-parchment">📜</span>
+          魔幻羊皮纸
+        </button>
       </div>
     </div>
 
@@ -120,15 +135,24 @@
       />
     </div>
 
-    <!-- Achievement Value: Xbox 点数/稀有度, PS 奖杯等级 -->
+    <!-- Achievement Value: Xbox/PS/Steam/Pixel/Parchment values -->
     <div v-if="form.cardStyle !== 'classic'" class="form-group">
       <label class="form-label">
         <span v-if="form.cardStyle === 'xbox'">点数 / 稀有度 <span class="optional-tag">可选</span></span>
-        <span v-else>奖杯等级 <span class="optional-tag">可选 · 填"金杯/银杯/铜杯/铂金"</span></span>
+        <span v-else-if="form.cardStyle === 'ps'">奖杯等级 <span class="optional-tag">可选 · 填"金杯/银杯/铜杯/铂金"</span></span>
+        <span v-else-if="form.cardStyle === 'steam'">稀有百分比 <span class="optional-tag">可选</span></span>
+        <span v-else-if="form.cardStyle === 'pixel'">奖励分数 <span class="optional-tag">可选</span></span>
+        <span v-else-if="form.cardStyle === 'parchment'">属性值/经验 <span class="optional-tag">可选</span></span>
       </label>
       <RichInput
         v-model="form.achievementValue"
-        :placeholder="form.cardStyle === 'xbox' ? '如：20G 或 稀有1%' : '如：金杯'"
+        :placeholder="
+          form.cardStyle === 'xbox' ? '如：20G 或 稀有1%' :
+          form.cardStyle === 'ps' ? '如：金杯' :
+          form.cardStyle === 'steam' ? '如：2.2%' :
+          form.cardStyle === 'pixel' ? '如：100 PTS' :
+          '如：+50 XP'
+        "
       />
     </div>
     <!-- Description (required) -->
@@ -620,34 +644,55 @@ function handleBgDrop(e) {
   justify-content: center;
   gap: 6px;
   padding: 8px 6px;
-  border-radius: 7px;
+  border-radius: 20px; /* Pill layout */
   border: 1px solid var(--border-subtle);
   background: rgba(0,0,0,0.2);
   color: var(--text-muted);
   cursor: pointer;
   font-size: 12px;
-  font-family: 'LXGW WenKai', 'Inter', sans-serif;
-  transition: all 0.2s;
+  font-family: var(--font-sans);
+  transition: var(--transition-spring);
 }
 .style-btn:hover {
   border-color: var(--border-gold);
   color: var(--text-primary);
+  transform: translateY(-1px);
 }
 .style-btn.active {
   background: rgba(191,149,63,0.15);
   border-color: rgba(191,149,63,0.6);
   color: var(--gold-2);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(191,149,63,0.15);
 }
 .style-btn-xbox.active {
-  background: rgba(16,124,16,0.2);
-  border-color: rgba(16,124,16,0.7);
+  background: rgba(16,124,16,0.15);
+  border-color: rgba(16,124,16,0.6);
   color: #4ddc4d;
+  box-shadow: 0 4px 12px rgba(16,124,16,0.2);
 }
 .style-btn-ps.active {
-  background: rgba(0,55,160,0.2);
-  border-color: rgba(40,100,220,0.6);
+  background: rgba(0,55,160,0.15);
+  border-color: rgba(40,100,220,0.5);
   color: #80aaff;
+  box-shadow: 0 4px 12px rgba(0,55,160,0.2);
+}
+.style-btn-steam.active {
+  background: rgba(27,40,56,0.25);
+  border-color: rgba(102,192,244,0.5);
+  color: #66c0f4;
+  box-shadow: 0 4px 12px rgba(27,40,56,0.3);
+}
+.style-btn-pixel.active {
+  background: rgba(255,0,85,0.15);
+  border-color: rgba(255,0,85,0.5);
+  color: #ff3377;
+  box-shadow: 0 4px 12px rgba(255,0,85,0.25);
+}
+.style-btn-parchment.active {
+  background: rgba(132,92,52,0.15);
+  border-color: rgba(132,92,52,0.6);
+  color: #a0784d;
+  box-shadow: 0 4px 12px rgba(132,92,52,0.2);
 }
 .style-icon-xbox {
   font-size: 11px;
@@ -657,6 +702,21 @@ function handleBgDrop(e) {
 .style-icon-ps {
   font-size: 10px;
   font-weight: 900;
+  color: inherit;
+}
+.style-icon-steam {
+  font-size: 11px;
+  font-weight: 900;
+  color: inherit;
+}
+.style-icon-pixel {
+  font-size: 11px;
+  font-weight: 900;
+  font-family: monospace;
+  color: inherit;
+}
+.style-icon-parchment {
+  font-size: 12px;
   color: inherit;
 }
 
@@ -725,23 +785,24 @@ function handleBgDrop(e) {
 .preset-icon-btn {
   width: 36px;
   height: 36px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--border-subtle);
   background: rgba(0,0,0,0.25);
   color: var(--text-primary);
   cursor: pointer;
-  font-size: 13px;
-  font-family: 'LXGW WenKai', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  font-family: var(--font-sans);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.18s;
+  transition: var(--transition-spring);
   padding: 0;
 }
 .preset-icon-btn:hover {
   border-color: var(--border-gold);
-  background: rgba(191,149,63,0.12);
-  transform: scale(1.1);
+  background: rgba(191,149,63,0.15);
+  transform: scale(1.12) translateY(-1px);
+  box-shadow: 0 4px 10px rgba(191, 149, 63, 0.2);
 }
 .custom-char-row {
   display: flex;
@@ -757,19 +818,20 @@ function handleBgDrop(e) {
 .btn-apply-char {
   flex: 1;
   padding: 7px 10px;
-  border-radius: 7px;
+  border-radius: 15px; /* Pill button */
   border: 1px solid var(--border-subtle);
   background: rgba(191,149,63,0.1);
   color: var(--gold-2);
   cursor: pointer;
-  font-size: 11px;
-  font-family: 'LXGW WenKai', 'Inter', sans-serif;
-  transition: all 0.2s;
+  font-size: 11.5px;
+  font-family: var(--font-sans);
+  transition: var(--transition-spring);
   white-space: nowrap;
 }
 .btn-apply-char:hover:not(:disabled) {
   background: rgba(191,149,63,0.2);
   border-color: var(--border-gold);
+  transform: translateY(-1px);
 }
 .btn-apply-char:disabled {
   opacity: 0.35;

@@ -50,10 +50,16 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useAchievementStore } from '../stores/achievement.js'
-import { storeToRefs } from 'pinia'
+
+const props = defineProps({
+  form: {
+    type: Object,
+    default: null
+  }
+})
 
 const store = useAchievementStore()
-const { form } = storeToRefs(store)
+const form = computed(() => props.form || store.form)
 
 const cardRef = ref(null)
 const isExporting = ref(false)
@@ -210,7 +216,7 @@ defineExpose({ cardRef, isExporting, forceShimmerPos })
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: 'LXGW WenKai', 'Inter', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .ps-sub-row {
